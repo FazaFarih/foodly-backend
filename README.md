@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🍽️ Foodly Backend
+# 🍽️ Foodly Backend 🍽️
 
 **REST API Backend untuk aplikasi pemesanan makanan berbasis Laravel**
 
