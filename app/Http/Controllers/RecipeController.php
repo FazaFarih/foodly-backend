@@ -10,7 +10,17 @@ class RecipeController extends Controller
     // Lihat semua resep
     public function index(Request $request)
     {
-        $userId = auth('sanctum')->id(); // Ambil ID user jika sedang login, null jika tidak (guest)
+        $userId = auth('sanctum')->id();
+
+        $sortBy    = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+        $allowedSorts = ['created_at', 'title', 'calories', 'likes_count'];
+
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+
+        $sortOrder = $sortOrder === 'asc' ? 'asc' : 'desc';
 
         $recipes = Recipe::with('user')
             ->withCount('likes')
@@ -22,14 +32,14 @@ class RecipeController extends Controller
                     ->orWhere('description', 'like', '%' . $request->search . '%')
                     ->orWhere('ingredients', 'like', '%' . $request->search . '%');
             })
-            ->latest()
+            ->orderBy($sortBy, $sortOrder)
             ->paginate(10);
 
         return response()->json($recipes);
     }
 
     // Lihat detail resep
-    public function show($id)
+    public function show(int $id)
     {
         $userId = auth('sanctum')->id();
 
@@ -76,7 +86,7 @@ class RecipeController extends Controller
     }
 
     // Edit resep
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $recipe = Recipe::find($id);
 
@@ -84,7 +94,6 @@ class RecipeController extends Controller
             return response()->json(['message' => 'Resep tidak ditemukan'], 404);
         }
 
-        // Pastikan hanya pemilik resep yang bisa edit
         if ($recipe->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Tidak diizinkan'], 403);
         }
@@ -114,7 +123,7 @@ class RecipeController extends Controller
     }
 
     // Hapus resep
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id)
     {
         $recipe = Recipe::find($id);
 
@@ -122,7 +131,6 @@ class RecipeController extends Controller
             return response()->json(['message' => 'Resep tidak ditemukan'], 404);
         }
 
-        // Pastikan hanya pemilik resep yang bisa hapus
         if ($recipe->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Tidak diizinkan'], 403);
         }
@@ -156,6 +164,16 @@ class RecipeController extends Controller
     {
         $userId = $request->user()->id;
 
+        $sortBy    = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+        $allowedSorts = ['created_at', 'title', 'calories', 'likes_count'];
+
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+
+        $sortOrder = $sortOrder === 'asc' ? 'asc' : 'desc';
+
         $recipes = Recipe::with('user')
             ->withCount('likes')
             ->withExists(['likes as is_liked' => function ($q) use ($userId) {
@@ -167,7 +185,7 @@ class RecipeController extends Controller
                     ->orWhere('description', 'like', '%' . $request->search . '%')
                     ->orWhere('ingredients', 'like', '%' . $request->search . '%');
             })
-            ->latest()
+            ->orderBy($sortBy, $sortOrder)
             ->paginate(10);
 
         return response()->json($recipes);
