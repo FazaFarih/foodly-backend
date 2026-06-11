@@ -23,7 +23,7 @@ class RecipeController extends Controller
         $sortOrder = $sortOrder === 'asc' ? 'asc' : 'desc';
 
         $recipes = Recipe::with('user')
-            ->withCount('likes')
+            ->withCount('likes as likes_count')
             ->withExists(['likes as is_liked' => function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             }])
@@ -39,12 +39,12 @@ class RecipeController extends Controller
     }
 
     // Lihat detail resep
-    public function show(int $id)
+    public function show($id)
     {
         $userId = auth('sanctum')->id();
 
         $recipe = Recipe::with('user')
-            ->withCount('likes')
+            ->withCount('likes as likes_count')
             ->withExists(['likes as is_liked' => function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             }])
@@ -86,7 +86,7 @@ class RecipeController extends Controller
     }
 
     // Edit resep
-    public function update(Request $request, int $id)
+    public function update(Request $request, $id)
     {
         $recipe = Recipe::find($id);
 
@@ -123,7 +123,7 @@ class RecipeController extends Controller
     }
 
     // Hapus resep
-    public function destroy(Request $request, int $id)
+    public function destroy(Request $request, $id)
     {
         $recipe = Recipe::find($id);
 
@@ -146,7 +146,7 @@ class RecipeController extends Controller
         $userId = auth('sanctum')->id();
 
         $recipes = Recipe::with('user')
-            ->withCount(['likes' => function ($query) {
+            ->withCount(['likes as likes_count' => function ($query) {
                 $query->where('created_at', '>=', now()->subDays(7));
             }])
             ->withExists(['likes as is_liked' => function ($q) use ($userId) {
@@ -175,7 +175,7 @@ class RecipeController extends Controller
         $sortOrder = $sortOrder === 'asc' ? 'asc' : 'desc';
 
         $recipes = Recipe::with('user')
-            ->withCount('likes')
+            ->withCount('likes as likes_count')
             ->withExists(['likes as is_liked' => function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             }])
